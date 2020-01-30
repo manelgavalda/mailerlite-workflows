@@ -15,7 +15,8 @@ class CreateDelayStepsTable extends Migration
     {
         Schema::create('delay_steps', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedInteger('days_to_wait')->nullable();
+            $table->unsignedInteger('time_to_wait');
+            $table->enum('time_unit', ['day', 'week', 'month']);
             $table->timestamps();
         });
     }

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Step extends Model
 {
-    protected $fillable = ['workflow_id', 'stepable_type', 'stepable_id'];
+    protected $fillable = ['stepable_type', 'stepable_id', 'parentable_type', 'parentable_id'];
 
     public function value()
     {
@@ -14,6 +14,11 @@ class Step extends Model
     }
 
     public function stepable()
+    {
+        return $this->morphTo();
+    }
+
+    public function parentable()
     {
         return $this->morphTo();
     }

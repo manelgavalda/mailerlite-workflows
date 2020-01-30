@@ -16,7 +16,7 @@ class CreateStepsTable extends Migration
         Schema::create('steps', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->morphs('stepable');
-            $table->unsignedInteger('workflow_id');
+            $table->morphs('parentable');
             $table->timestamps();
         });
     }

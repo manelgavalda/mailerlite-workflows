@@ -15,8 +15,8 @@ class CreateEmailStepsTable extends Migration
     {
         Schema::create('email_steps', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('subject')->nullable();
-            $table->string('content')->nullable();
+            $table->string('subject');
+            $table->string('content');
             $table->timestamps();
         });
     }

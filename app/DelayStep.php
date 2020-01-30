@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class DelayStep extends Model
 {
-    protected $fillable = ['days_to_wait'];
+    protected $fillable = ['time_to_wait', 'time_unit'];
 
     public function value()
     {
-        return "Wait {$this->days_to_wait} day(s)";
+        return "Wait {$this->time_to_wait} {$this->time_unit}(s)";
     }
 }

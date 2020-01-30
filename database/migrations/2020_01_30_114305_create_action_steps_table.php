@@ -15,8 +15,7 @@ class CreateActionStepsTable extends Migration
     {
         Schema::create('action_steps', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('actionable_type')->nullable();
-            $table->unsignedInteger('actionable_id')->nullable();
+            $table->morphs('actionable');
             $table->timestamps();
         });
     }
