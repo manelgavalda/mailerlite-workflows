@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ConditionStep extends Model
 {
-    protected $fillable = ['condition_type_id', 'conditionable_type', 'conditionable_id'];
+    protected $fillable = ['conditionable_type', 'conditionable_id'];
 
     public function value()
     {

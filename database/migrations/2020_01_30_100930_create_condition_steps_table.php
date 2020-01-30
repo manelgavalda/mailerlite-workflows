@@ -15,7 +15,6 @@ class CreateConditionStepsTable extends Migration
     {
         Schema::create('condition_steps', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedInteger('condition_type_id')->nullable();
             $table->unsignedInteger('conditionable_type')->nullable();
             $table->unsignedInteger('conditionable_id')->nullable();
             $table->timestamps();

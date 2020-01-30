@@ -2,28 +2,26 @@
 
 namespace Tests\Feature;
 
+use App\Step;
 use App\Action;
-use App\Condition;
-use App\ConditionStep;
-use App\ConditionTrigger;
-use App\ConditionType;
+use App\Trigger;
+use App\Workflow;
+use App\StepType;
 use App\DelayStep;
 use App\EmailStep;
-use App\Step;
-use App\StepType;
-use App\SubscriberGroup;
-use App\Trigger;
+use App\Condition;
+use Tests\TestCase;
 use App\TriggerField;
-use App\Workflow;
+use App\ConditionStep;
+use App\SubscriberGroup;
+use App\ConditionTrigger;
 use App\WorkflowActivityCondition;
 use App\WorkflowActivityEmailAction;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
-    use DatabaseMigrations;
+    use RefreshDatabase;
 
     /**
      * A basic test example.
@@ -32,82 +30,37 @@ class ExampleTest extends TestCase
      */
     public function testBasicTest()
     {
-        // $triggers = Trigger::insert([
-        //     [
-        //         'icon' => 'icon',
-        //         'name' => 'When subscriber clicks a link',
-        //         'description' => 'Workflow triggered when a subscriber clicks a link in any campaign or automation workflow'
-        //     ],
-        //     [
-        //         'icon' => 'icon',
-        //         'name' => 'Updated field',
-        //         'description' => 'Workflow triggered when a subscriber click a link in any campaign or automation workflow'
-        //     ],
-        //     [
-        //         'icon' => 'icon',
-        //         'name' => 'The anniversary of a date',
-        //         'description' => 'Workflow triggered on a specific date (great for subscriptions, free trials, etc.)'
-        //     ]
-        // ]);
+        $workflow = $this->createWorkflow($this->createTrigger());
 
-        // $completesFormTrigger = Trigger::create([
-        //     'icon' => 'icon',
-        //     'name' => 'When subscriber completes a form',
-        //     'description' => 'Workflow triggered when a person subscribes to a form.'
-        // ]);
+        $this->assertEquals(
+            $workflow->trigger->value(),
+            'When subscriber joins a group MailerLite'
+        );
 
-        // // $subscriberGroup = SubscriberGroup::create([
-        // //     'name' => 'MailerLite'
-        // // ]);
+        $firstStep = $this->createFirstStep($workflow);
 
-        // // $emailStepType = StepType::create([
-        // //     'name' => 'Email',
-        // //     'icon' => 'email'
-        // // ]);
+        $this->assertEquals(
+            $firstStep->stepable->value(),
+            'Wait 1 day(s)'
+        );
 
-        // // $delayStepType = StepType::create([
-        // //     'name' => 'delay',
-        // //     'icon' => 'time'
-        // // ]);
+        $secondStep = $this->createSecondStep($workflow);
 
-        // // $conditionStepType = StepType::create([
-        // //     'name' => 'condition',
-        // //     'icon' => 'tree'
-        // // ]);
+        $this->assertEquals(
+            $secondStep->stepable->value(),
+            'Welcome to MailerLite'
+        );
 
-        // // $actionStepType = StepType::create([
-        // //     'name' => 'action',
-        // //     'icon' => 'gear'
-        // // ]);
+        $thirdStep = $this->createThirdStep($workflow, $secondStep);
 
-        // $campaingActivitycondition = Condition::create([
-        //     'name' => 'Campaign activity'
-        // ]);
+        $this->assertEquals(
+            $thirdStep->stepable->value(),
+            'Welcome to MailerLite was opened'
+        );
+    }
 
-        // $workflowActivitycondition = Condition::create([
-        //     'name' => 'Wokflow activity'
-        // ]);
-
-        // $wasOpenedConditionTrigger = ConditionTrigger::create([
-        //     'name' => 'was opened'
-        // ]);
-
-        // $copyToAGroupAction = Action::create([
-        //     'name' => 'Copy to a group'
-        // ]);
-
-
-
-
-
-
-
-
-
-
-
-        // Setup
-
+    protected function createTrigger()
+    {
         $subscriberJoinTrigger = Trigger::create([
             'icon' => 'icon',
             'name' => 'When subscriber joins a group',
@@ -119,8 +72,11 @@ class ExampleTest extends TestCase
             'type' => 'select'
         ]);
 
-        // Workflow
+        return $subscriberJoinTrigger;
+    }
 
+    protected function createWorkflow($subscriberJoinTrigger)
+    {
         $workflow = Workflow::create([
             'name' => 'Welcome',
             'trigger_id' => $subscriberJoinTrigger->id
@@ -130,40 +86,30 @@ class ExampleTest extends TestCase
             'value' => 'MailerLite'
         ]);
 
-        $this->assertEquals(
-            $workflow->trigger->value(),
-            'When subscriber joins a group MailerLite'
-        );
+        return $workflow;
+    }
 
-
-        // Step 1
-
-        $delayStep = DelayStep::create();
-
+    protected function createFirstStep($workflow)
+    {
         $firstStep = Step::create([
             'workflow_id' => $workflow->id,
             'stepable_type' => 'App\DelayStep',
-            'stepable_id' => $delayStep->id
+            'stepable_id' => DelayStep::create()->id
         ]);
 
         $firstStep->stepable->update([
             'days_to_wait' => 1
         ]);
 
-        $this->assertEquals(
-            $firstStep->stepable->value(),
-            'Wait 1 day(s)'
-        );
+        return $firstStep;
+    }
 
-
-        // Step 2
-
-        $emailStep = EmailStep::create();
-
+    protected function createSecondStep($workflow)
+    {
         $secondStep = Step::create([
             'workflow_id' => $workflow->id,
             'stepable_type' => 'App\EmailStep',
-            'stepable_id' => $emailStep->id
+            'stepable_id' => EmailStep::create()->id
         ]);
 
         $secondStep->stepable->update([
@@ -171,37 +117,13 @@ class ExampleTest extends TestCase
             'content' => 'email content'
         ]);
 
-        $this->assertEquals(
-            $secondStep->stepable->value(),
-            'Welcome to MailerLite'
-        );
+        return $secondStep;
+    }
 
-
-
-
-
-
-
-
-
-
-
-        // Step 3
-        $conditionType = ConditionType::create([
-            'name' => 'Workflow activity',
-        ]);
-
+    protected function createThirdStep($workflow, $secondStep)
+    {
         $workflowActivityEmailAction = WorkflowActivityEmailAction::create([
             'name' => 'was opened'
-        ]);
-
-
-        $conditionStep = ConditionStep::create();
-
-        $thirdStep = Step::create([
-            'workflow_id' => $workflow->id,
-            'stepable_type' => 'App\ConditionStep',
-            'stepable_id' => $conditionStep->id
         ]);
 
         $workflowActivityCondition = WorkflowActivityCondition::create([
@@ -209,82 +131,17 @@ class ExampleTest extends TestCase
             'workflow_activity_email_action_id' => $workflowActivityEmailAction->id
         ]);
 
-        $conditionStep->update([
-            'condition_type_id' => $conditionType->id,
-            'conditionable_type' => 'App\WorkflowActivityCondition',
-            'conditionable_id' => $workflowActivityCondition->id
-
+        $thirdStep = Step::create([
+            'workflow_id' => $workflow->id,
+            'stepable_type' => 'App\ConditionStep',
+            'stepable_id' => ConditionStep::create()->id
         ]);
 
-        $this->assertEquals(
-            $thirdStep->stepable->value(),
-            'Welcome to MailerLite was opened'
-        );
+        $thirdStep->stepable->update([
+            'conditionable_type' => 'App\WorkflowActivityCondition',
+            'conditionable_id' => $workflowActivityCondition->id
+        ]);
 
-
-
-        // $condition = Condition::create([
-        //     'condition_step_id' => $conditionStep->id,
-        //     'condition_type' => $conditionType->id,
-        //     'conditionable_type' => 'App\WorkflowActivityCondition',
-        //     'conditionable_id' => $workflowActivityCondition->id,
-        // ]);
-
-
-
-
-
-
-
-        // $thirdStep->stepable->update([
-        //     'condition_id' => $workflowActivityCondition->id,
-        //     'condition_action_id' => workflowActivityEmailAction->id
-        // ]);
-
-        // $this->assertEquals(
-        //     $thirdStep->stepable->value(),
-        //     'Welcome to MailerLite'
-        // );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // $secondStep = Step::create([
-        //     'workflow_id' => $workflow->id,
-        //     'parent_id' => $firstStep->id,
-        //     'step_type_id' => $emailStepType->id,
-        //     // 'content' => 'Welcome to MailerLite'
-        // ]);
-
-        // $thirdStep = Step::create([
-        //     'workflow_id' => $workflow->id,
-        //     'parent_id' => $secondStep->id,
-        //     'step_type_id' => $conditionStepType->id,
-        //     // 'condition_id' => $workflowActivitycondition->id,
-        //     // 'condition_target_id' => $secondStep->id,
-        //     // 'condition_trigger_id' => $wasOpenedConditionTrigger->id
-        // ]);
-
-        // $fourthStepTrue = Step::create([
-        //     'workflow_id' => $workflow->id,
-        //     'parent_id' => $secondStep->id,
-        //     'step_type_id' => $actionStepType->id
-        //     // 'action_id' => $copyToAGroupAction->id
-        //     // 'action_group_id' => $openedGroupAction->id
-        // ]);
-
-        $this->assertTrue(true);
+        return $thirdStep;
     }
 }
