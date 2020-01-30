@@ -15,10 +15,8 @@ class CreateTriggersTable extends Migration
     {
         Schema::create('triggers', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('icon');
-            $table->string('name');
-            $table->string('description');
-            $table->unsignedInteger('field_id')->nullable();
+            $table->unsignedInteger('triggerable_id');
+            $table->string('triggerable_type');
             $table->timestamps();
         });
     }

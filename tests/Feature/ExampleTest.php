@@ -2,22 +2,22 @@
 
 namespace Tests\Feature;
 
-use App\Step;
-use App\Action;
-use App\Trigger;
-use App\Workflow;
-use App\StepType;
+use App\ActionStep;
+use App\ConditionStep;
+use App\CopyToAGroupAction;
 use App\DelayStep;
 use App\EmailStep;
-use App\Condition;
-use Tests\TestCase;
-use App\TriggerField;
-use App\ConditionStep;
-use App\SubscriberGroup;
-use App\ConditionTrigger;
+use App\FalseConditionStep;
+use App\Group;
+use App\Step;
+use App\SubscriberJoinTrigger;
+use App\Trigger;
+use App\TrueConditionStep;
+use App\Workflow;
 use App\WorkflowActivityCondition;
 use App\WorkflowActivityEmailAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
@@ -30,7 +30,10 @@ class ExampleTest extends TestCase
      */
     public function testBasicTest()
     {
-        $workflow = $this->createWorkflow($this->createTrigger());
+        $groupOpened = Group::create(['name' => 'opened']);
+        $groupMailerLite = Group::create(['name' => 'MailerLite']);
+
+        $workflow = $this->createWorkflow($groupMailerLite);
 
         $this->assertEquals(
             $workflow->trigger->value(),
@@ -40,50 +43,60 @@ class ExampleTest extends TestCase
         $firstStep = $this->createFirstStep($workflow);
 
         $this->assertEquals(
-            $firstStep->stepable->value(),
+            $firstStep->value(),
             'Wait 1 day(s)'
         );
 
         $secondStep = $this->createSecondStep($workflow);
 
         $this->assertEquals(
-            $secondStep->stepable->value(),
+            $secondStep->value(),
             'Welcome to MailerLite'
         );
 
-        $thirdStep = $this->createThirdStep($workflow, $secondStep);
+        $thirdStep = $this->createThirdStep($workflow, $secondStep->stepable);
 
         $this->assertEquals(
-            $thirdStep->stepable->value(),
+            $thirdStep->value(),
             'Welcome to MailerLite was opened'
+        );
+
+        $trueFourthStep = $this->createTrueStep($workflow, $groupOpened);
+
+        $this->assertEquals(
+            $trueFourthStep->value(),
+            'Copy to a group opened'
+        );
+
+        $falseFourthStep = $this->createFalseStep($workflow);
+
+        $this->assertEquals(
+            $falseFourthStep->value(),
+            'Wait 5 day(s)'
+        );
+
+        $fifthStep = $this->createFifthStep($workflow);
+
+        $this->assertEquals(
+            $fifthStep->value(),
+            'We miss you!'
         );
     }
 
-    protected function createTrigger()
+    protected function createWorkflow($group)
     {
-        $subscriberJoinTrigger = Trigger::create([
-            'icon' => 'icon',
-            'name' => 'When subscriber joins a group',
-            'description' => 'Workflow triggered when a subscriber joins your subscriber group.'
+        $subscriberJoinTrigger = SubscriberJoinTrigger::create([
+            'group_id' => $group->id
         ]);
 
-        $subscriberJoinTrigger->field()->create([
-            'name' => 'SubscriberGroup',
-            'type' => 'select'
+        $trigger = Trigger::create([
+            'triggerable_type' => 'App\SubscriberJoinTrigger',
+            'triggerable_id' => $subscriberJoinTrigger->id
         ]);
 
-        return $subscriberJoinTrigger;
-    }
-
-    protected function createWorkflow($subscriberJoinTrigger)
-    {
         $workflow = Workflow::create([
             'name' => 'Welcome',
-            'trigger_id' => $subscriberJoinTrigger->id
-        ]);
-
-        $workflow->trigger->field->update([
-            'value' => 'MailerLite'
+            'trigger_id' => $trigger->id
         ]);
 
         return $workflow;
@@ -120,14 +133,14 @@ class ExampleTest extends TestCase
         return $secondStep;
     }
 
-    protected function createThirdStep($workflow, $secondStep)
+    protected function createThirdStep($workflow, $email)
     {
         $workflowActivityEmailAction = WorkflowActivityEmailAction::create([
             'name' => 'was opened'
         ]);
 
         $workflowActivityCondition = WorkflowActivityCondition::create([
-            'workflow_activity_email_id' => $secondStep->stepable->id,
+            'workflow_activity_email_id' => $email->id,
             'workflow_activity_email_action_id' => $workflowActivityEmailAction->id
         ]);
 
@@ -143,5 +156,68 @@ class ExampleTest extends TestCase
         ]);
 
         return $thirdStep;
+    }
+
+    protected function createTrueStep($workflow, $group)
+    {
+        $trueStep = Step::create([ // parent
+            'workflow_id' => $workflow->id,
+            'stepable_type' => 'App\TrueConditionStep',
+            'stepable_id' => TrueConditionStep::create()->id
+        ]);
+
+        $trueFourthStep = Step::create([
+            'workflow_id' => $workflow->id,
+            'stepable_type' => 'App\ActionStep',
+            'stepable_id' => ActionStep::create()->id
+        ]);
+
+        $copyToAGroupAction = CopyToAGroupAction::create([
+            'group_id' => $group->id
+        ]);
+
+        $trueFourthStep->stepable->update([
+            'actionable_type' => 'App\CopyToAGroupAction',
+            'actionable_id' => $copyToAGroupAction->id
+        ]);
+
+        return $trueFourthStep;
+    }
+
+    protected function createFalseStep($workflow)
+    {
+        $falseStep = Step::create([ // parent
+            'workflow_id' => $workflow->id,
+            'stepable_type' => 'App\FalseConditionStep',
+            'stepable_id' => FalseConditionStep::create()->id
+        ]);
+
+        $falseFourthStep = Step::create([
+            'workflow_id' => $workflow->id,
+            'stepable_type' => 'App\DelayStep',
+            'stepable_id' => DelayStep::create()->id
+        ]);
+
+        $falseFourthStep->stepable->update([
+            'days_to_wait' => 5
+        ]);
+
+        return $falseFourthStep;
+    }
+
+    protected function createFifthStep($workflow)
+    {
+        $fifthStep = Step::create([
+            'workflow_id' => $workflow->id,
+            'stepable_type' => 'App\EmailStep',
+            'stepable_id' => EmailStep::create()->id
+        ]);
+
+        $fifthStep->stepable->update([
+            'subject' => 'We miss you!',
+            'content' => 'email content'
+        ]);
+
+        return $fifthStep;
     }
 }

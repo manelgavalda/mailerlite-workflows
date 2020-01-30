@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateConditionTriggersTable extends Migration
+class CreateTrueConditionStepsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,8 @@ class CreateConditionTriggersTable extends Migration
      */
     public function up()
     {
-        Schema::create('condition_triggers', function (Blueprint $table) {
+        Schema::create('true_condition_steps', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('name');
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ class CreateConditionTriggersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('condition_triggers');
+        Schema::dropIfExists('true_condition_steps');
     }
 }

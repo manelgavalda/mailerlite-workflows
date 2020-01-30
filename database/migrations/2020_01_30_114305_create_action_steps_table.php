@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateStepTypesTable extends Migration
+class CreateActionStepsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,10 @@ class CreateStepTypesTable extends Migration
      */
     public function up()
     {
-        Schema::create('step_types', function (Blueprint $table) {
+        Schema::create('action_steps', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('name');
-            $table->string('icon');
+            $table->string('actionable_type')->nullable();
+            $table->unsignedInteger('actionable_id')->nullable();
             $table->timestamps();
         });
     }
@@ -28,6 +28,6 @@ class CreateStepTypesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('step_types');
+        Schema::dropIfExists('action_steps');
     }
 }

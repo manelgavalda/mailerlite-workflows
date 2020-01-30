@@ -6,15 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Trigger extends Model
 {
-    protected $fillable = ['icon', 'name', 'description', 'workflow_id', 'subscriber_group_id'];
+    protected $fillable = ['triggerable_type', 'triggerable_id'];
 
-    public function field()
+    public function triggerable()
     {
-        return $this->hasOne(TriggerField::class);
+        return $this->morphTo();
     }
 
     public function value()
     {
-        return "{$this->name} {$this->field->value}";
+        return $this->triggerable->value();
     }
 }

@@ -17,7 +17,6 @@ class CreateStepsTable extends Migration
             $table->bigIncrements('id');
             $table->morphs('stepable');
             $table->unsignedInteger('workflow_id');
-            // $table->unsignedInteger('days_to_wait');
             $table->timestamps();
         });
     }

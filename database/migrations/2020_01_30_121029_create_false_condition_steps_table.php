@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTriggerWorkflowTable extends Migration
+class CreateFalseConditionStepsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,8 @@ class CreateTriggerWorkflowTable extends Migration
      */
     public function up()
     {
-        Schema::create('trigger_workflow', function (Blueprint $table) {
+        Schema::create('false_condition_steps', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedInteger('trigger_id');
-            $table->unsignedInteger('workflow_id');
-            // $table->unsignedInteger('subscriber_group_id');
             $table->timestamps();
         });
     }
@@ -29,6 +26,6 @@ class CreateTriggerWorkflowTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('trigger_workflow');
+        Schema::dropIfExists('false_condition_steps');
     }
 }

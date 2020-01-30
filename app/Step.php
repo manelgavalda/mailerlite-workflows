@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Step extends Model
 {
-    protected $fillable = ['stepable_type', 'stepable_id', 'workflow_id'];
+    protected $fillable = ['workflow_id', 'stepable_type', 'stepable_id'];
 
     public function value()
     {
-        return $this->steapeable->value();
+        return $this->stepable->value();
     }
 
     public function stepable()
