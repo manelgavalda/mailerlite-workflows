@@ -34,7 +34,6 @@ class WorkFlowTest extends TestCase
     public function a_workflow_can_be_created()
     {
         $workflow = $this->createWorkflow();
-        $this->assertNull($workflow->parentable);
         $this->assertEquals($workflow->trigger->value(), 'When subscriber joins a group MailerLite');
 
         $firstStep = $this->createFirstStep($workflow);
@@ -74,13 +73,10 @@ class WorkFlowTest extends TestCase
             'group_id' => $this->groupMailerLite->id
         ]);
 
-        $trigger = Trigger::create([
+        return Trigger::create([
             'triggerable_type' => 'App\SubscriberJoinTrigger',
             'triggerable_id' => $subscriberJoinTrigger->id
-        ]);
-
-        return $trigger
-            ->workflow()
+        ])->workflow()
             ->create(['name' => 'Welcome']);
     }
 
